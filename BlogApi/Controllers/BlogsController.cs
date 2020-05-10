@@ -1,5 +1,7 @@
-﻿using System;
+﻿using BlogApi.Models;
+using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core.Objects.DataClasses;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -9,31 +11,121 @@ namespace BlogApi.Controllers
 {
     public class BlogsController : ApiController
     {
-        // GET api/values
-        public IEnumerable<string> Get()
+        // GET api/blogs
+        public IHttpActionResult Get()
         {
-            return new string[] { "value1", "value2" };
+            try
+            {
+                using (MasterblogEntities entities = new MasterblogEntities())
+                {
+                    var entity = entities.Blogs;
+                    if (entity == null)
+                    {
+                        return NotFound();
+                    }
+                    return Ok(entity.ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.ToString());
+            }
+
+
         }
 
         // GET api/values/5
-        public string Get(int id)
+        public IHttpActionResult Get(int id)
         {
-            return "value";
+            try
+            {
+                using (MasterblogEntities entities = new MasterblogEntities())
+                {
+                    var entity = entities.Blogs.Find(id);
+                    if (entity == null)
+                    {
+                        return NotFound();
+                    }
+                    return Ok(entity);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         // POST api/values
-        public void Post([FromBody]string value)
+        public IHttpActionResult Post([FromBody]Blog blog)
         {
+            try
+            {
+                using (MasterblogEntities entities = new MasterblogEntities())
+                {
+                    entities.Blogs.Add(blog);
+                    entities.SaveChanges();
+                    return Content(HttpStatusCode.Created, blog);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+
         }
 
         // PUT api/values/5
-        public void Put(int id, [FromBody]string value)
+        public IHttpActionResult Put(int id, [FromBody]Blog blog)
         {
+            try
+            {
+                using (MasterblogEntities entities = new MasterblogEntities())
+                {
+                    var entity = entities.Blogs.Find(id);
+                    if (entity == null)
+                    {
+                        return NotFound();
+                    }
+                    entity.Title = blog.Title;
+                    entity.Author = blog.Author;
+                    entity.ImageLink = blog.ImageLink;
+                    entity.Body = blog.Body;
+                    entities.SaveChanges();
+                    return Ok(entity);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+
         }
 
         // DELETE api/values/5
-        public void Delete(int id)
+        public IHttpActionResult Delete(int id)
         {
+            try
+            {
+                using (MasterblogEntities entities = new MasterblogEntities())
+                {
+                    var entity = entities.Blogs.Find(id);
+                    if (entity == null)
+                    {
+                        return NotFound();
+                    }
+                    entities.Blogs.Remove(entity);
+                    entities.SaveChanges();
+                    return Ok($"Blog with id of {id} has been removed");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
     }
 }
